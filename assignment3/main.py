@@ -68,6 +68,35 @@ def main():
     print(dictionary)
 
 
+    with open("stopwords.txt", "r") as file:
+        stopwords = file.read().split(",")
+    
+    print(stopwords)
+    stopword_ids = []
+    for word in stopwords:
+        if word in dictionary.values():
+            stopword_ids.append(dictionary.token2id[word])
+    
+    print(stopword_ids)
+    dictionary.filter_tokens(stopword_ids)
+
+    print(dictionary)
+
+    # 2.2 Bags of words
+
+    bow_paragraphs = []
+    for p in paragraphs:
+        bag_of_words = dictionary.doc2bow(p)
+        bow_paragraphs.append(bag_of_words)
+
+    print(bow_paragraphs[0], bow_paragraphs[1])
+
+    # 3 Retrieval Models
+
+    
+
+
+
 
 
 if __name__ == "__main__":
