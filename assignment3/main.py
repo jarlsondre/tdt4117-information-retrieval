@@ -106,15 +106,28 @@ def main():
 
     # 3.3 Construct MatrixSimilary object to calculate similarities
 
-    similarity = gensim.similarities.MatrixSimilarity(tfidf_corpus)
+    tfidf_similarity = gensim.similarities.MatrixSimilarity(tfidf_corpus)
 
-    print(similarity)
+    print(tfidf_similarity)
+
+    # 3.4 LSI Model
+
+    lsi_model = gensim.models.LsiModel(tfidf_corpus, id2word=dictionary, num_topics=100)
+
+    lsi_corpus = [lsi_model[i] for i in bow_paragraphs]
+
+    print(lsi_corpus[0])
+
+    lsi_similarity = gensim.similarities.MatrixSimilarity(lsi_corpus)
+
+    # 3.5 Report and interpret topics
+
+    print("Showing topics: ")
+    topics = lsi_model.show_topics(num_topics=3, formatted=True)
+    print(topics)
 
 
-
-
-
-
+    # 4 Querying
 
 
 
