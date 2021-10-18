@@ -93,7 +93,25 @@ def main():
 
     # 3 Retrieval Models
 
-    
+    # 3.1 Build TF-IDF Model 
+    tfidf_model = gensim.models.TfidfModel(corpus=bow_paragraphs, dictionary=dictionary)
+    print(tfidf_model)
+
+    # 3.2 Map bow into TF-IDF weights
+
+    tfidf_corpus = [tfidf_model[i] for i in bow_paragraphs]
+    print(tfidf_corpus[0])
+    print(tfidf_corpus[1])
+
+    # 3.3 Construct MatrixSimilary object to calculate similarities
+
+    similarity = gensim.similarities.MatrixSimilarity(tfidf_corpus)
+
+    print(similarity)
+
+
+
+
 
 
 
