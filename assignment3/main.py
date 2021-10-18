@@ -6,12 +6,28 @@ import gensim
 
 
 def print_five_first_paragraphs(paragraphs): 
+    """
+    Function for printing paragraphs. This is used 
+    in order to visualize what changes each transformation
+    does :))  
+    """
     print("\n--------------------")
     print("Printing the five first paragraphs")
     print("--------------------\n")
     for i in range(5):
         print(paragraphs[i])
     print("--------------------\n")
+
+
+# TODO: Fill out this with the first part of the main()-function
+def preprocessing(document):
+    """
+    Function for removing punctuation, tokenizing, stemming 
+    and converting to BOW representations
+    """
+
+
+    return document
 
 def main(): 
     # 1.1 Open file
@@ -128,6 +144,11 @@ def main():
 
 
     # 4 Querying
+
+    # 4.1 Apply all necessary transformation to the query
+    query = "What is the function of money?"
+
+
 
 
 
