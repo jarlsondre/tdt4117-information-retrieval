@@ -23,9 +23,15 @@ def print_five_first_paragraphs(paragraphs):
 def preprocessing(document):
     """
     Function for removing punctuation, tokenizing, stemming 
-    and converting to BOW representations
     """
 
+    table = str.maketrans("", "", string.punctuation+"\n\r\t")
+    for i in range(len(document)):
+        document[i] = document[i].translate(table).lower() # Removing all the punctuation and making the strings lowercase
+    
+    stemmer = PorterStemmer()
+    for i in range(len(document)):
+        document[i] = stemmer.stem(document[i])
 
     return document
 
@@ -37,27 +43,23 @@ def main():
     paragraphs = f.read().split("\n\n")
 
     f.close() # Closing the file
-    print(f"length is {len(paragraphs)}")
     
     # 1.3 Filter out paragraphs containing "Gutenberg"
     for p in paragraphs:
         if "Gutenberg" in p:
             paragraphs.remove(p)
 
-    print(f"length is {len(paragraphs)}") # Seeing that the length changes after removal
 
     # Copying the paragraphs so we have them for later
     original_paragraphs = []
     for p in paragraphs:
         original_paragraphs.append(p)
     
-    print_five_first_paragraphs(paragraphs)
 
     # 1.4 Tokenizing paragraphs (splitting them into words)
     for i in range(len(paragraphs)):
         paragraphs[i] = paragraphs[i].split()
 
-    print_five_first_paragraphs(paragraphs)
 
     # 1.5 Removing punctuation
     print(string.punctuation+"\n\r\t")
@@ -66,7 +68,6 @@ def main():
         for j in range(len(paragraphs[i])):
             paragraphs[i][j] = paragraphs[i][j].translate(table).lower() # Removing all the punctuation and making the strings lowercase
     
-    print_five_first_paragraphs(paragraphs)
 
     # 1.6 Stemming the words
     stemmer = PorterStemmer()
@@ -74,7 +75,6 @@ def main():
         for j in range(len(paragraphs[i])):
             paragraphs[i][j] = stemmer.stem(paragraphs[i][j])
 
-    print_five_first_paragraphs(paragraphs)
 
     # 1.7 Frequency of words ??
 
@@ -82,22 +82,18 @@ def main():
 
     # 2.1 Building a dictionary
     dictionary = gensim.corpora.Dictionary(paragraphs)
-    print(dictionary)
 
 
     with open("stopwords.txt", "r") as file:
         stopwords = file.read().split(",")
     
-    print(stopwords)
     stopword_ids = []
     for word in stopwords:
         if word in dictionary.values():
             stopword_ids.append(dictionary.token2id[word])
     
-    print(stopword_ids)
     dictionary.filter_tokens(stopword_ids)
 
-    print(dictionary)
 
     # 2.2 Bags of words
 
@@ -106,33 +102,25 @@ def main():
         bag_of_words = dictionary.doc2bow(p)
         bow_paragraphs.append(bag_of_words)
 
-    print(bow_paragraphs[0], bow_paragraphs[1])
 
     # 3 Retrieval Models
 
     # 3.1 Build TF-IDF Model 
     tfidf_model = gensim.models.TfidfModel(corpus=bow_paragraphs, dictionary=dictionary)
-    print(tfidf_model)
 
     # 3.2 Map bow into TF-IDF weights
 
     tfidf_corpus = [tfidf_model[i] for i in bow_paragraphs]
-    print(tfidf_corpus[0])
-    print(tfidf_corpus[1])
 
     # 3.3 Construct MatrixSimilary object to calculate similarities
 
     tfidf_similarity = gensim.similarities.MatrixSimilarity(tfidf_corpus)
-
-    print(tfidf_similarity)
 
     # 3.4 LSI Model
 
     lsi_model = gensim.models.LsiModel(tfidf_corpus, id2word=dictionary, num_topics=100)
 
     lsi_corpus = [lsi_model[i] for i in bow_paragraphs]
-
-    print(lsi_corpus[0])
 
     lsi_similarity = gensim.similarities.MatrixSimilarity(lsi_corpus)
 
@@ -146,9 +134,43 @@ def main():
     # 4 Querying
 
     # 4.1 Apply all necessary transformation to the query
-    query = "What is the function of money?"
+    
+    query = "What is the function of money?".lower()
+    query_list = query.split(" ")
+    query_transformed = preprocessing(query_list)
 
+    query_bow = dictionary.doc2bow(query_transformed)
 
+    # 4.2 From BOW to TF-IDF
+
+    tfidf_query = tfidf_model[query_bow]
+
+    # 4.3 Report top 3 most relevant paragraphs
+
+    doc2similarity = enumerate(tfidf_similarity[tfidf_query])
+    relevant_docs = sorted(doc2similarity, key=lambda kv: -kv[1])[:3] 
+    print()
+    for doc in relevant_docs:
+        print(f"[Paragraph #{doc[0]}]")
+        print("\n".join(original_paragraphs[doc[0]].split("\n")[:5]))
+        print()
+    print(sorted(doc2similarity, key=lambda kv: -kv[1])[:3] )
+
+    # 4.4 Convert from TF-IDF to LSI-topics representation
+
+    lsi_query = lsi_model[tfidf_query]
+    print( sorted(lsi_query, key=lambda kv: -abs(kv[1]))[:3] )
+    print( lsi_model.show_topics(3) )
+    doc2similarity = enumerate(lsi_similarity[lsi_query])
+    relevant_docs2 = sorted(doc2similarity, key=lambda kv: -kv[1])[:3]
+    for doc in relevant_docs2:
+        print(f"[Paragraph #{doc[0]}]")
+        print("\n".join(original_paragraphs[doc[0]].split("\n")[:5]))
+        print()
+
+    # The different mdoels yield different results. They both retrieve
+    # document 1022, but the order is different and the other two results
+    # are also different :^)
 
 
 
