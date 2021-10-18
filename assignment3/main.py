@@ -20,6 +20,7 @@ def main():
     # 1.2 Partition file into paragraphs
     paragraphs = f.read().split("\n\n")
 
+    f.close() # Closing the file
     print(f"length is {len(paragraphs)}")
     
     # 1.3 Filter out paragraphs containing "Gutenberg"
@@ -108,6 +109,7 @@ def main():
     similarity = gensim.similarities.MatrixSimilarity(tfidf_corpus)
 
     print(similarity)
+
 
 
 
